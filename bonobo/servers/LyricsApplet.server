@@ -1,0 +1,33 @@
+<oaf_info>
+
+<oaf_server ubuntu-gettext-domain="gnome-applets-2.0" iid="OAFIID:LyricsApplet_Factory" type="exe" location="/usr/lib/gnome-applets/lyrics-applet">
+        <oaf_attribute name="repo_ids" type="stringv">
+                <item value="IDL:Bonobo/GenericFactory:1.0"/>
+                <item value="IDL:Bonobo/Unknown:1.0"/>
+        </oaf_attribute>
+        <oaf_attribute name="name" type="string" value="Lyrics"/>
+        <oaf_attribute name="name-sk" type="string" value="Lyrics"/>
+        <oaf_attribute name="description" type="string" value="Display lyrics of playing song."/>
+        <oaf_attribute name="description-en_CA" type="string" value="Display lyrics of playing song."/>
+        <oaf_attribute name="description-en_GB" type="string" value="Display lyrics of playing song."/>
+</oaf_server>
+
+<oaf_server ubuntu-gettext-domain="gnome-applets-2.0" iid="OAFIID:LyricsApplet" type="factory" location="OAFIID:LyricsApplet_Factory">
+
+        <oaf_attribute name="repo_ids" type="stringv">
+                <item value="IDL:GNOME/Vertigo/PanelAppletShell:1.0"/>
+                <item value="IDL:Bonobo/Control:1.0"/>
+                <item value="IDL:Bonobo/Unknown:1.0"/>
+        </oaf_attribute>
+        <oaf_attribute name="name" type="string" value="Lyrics"/>
+        <oaf_attribute name="name-en_CA" type="string" value="Lyrics"/>
+        <oaf_attribute name="name-en_GB" type="string" value="Lyrics"/>
+        <oaf_attribute name="name-sk" type="string" value="Lyrics"/>
+        <oaf_attribute name="description" type="string" value="Display lyrics of playing song."/>
+        <oaf_attribute name="description-en_CA" type="string" value="Display lyrics of playing song."/>
+        <oaf_attribute name="description-en_GB" type="string" value="Display lyrics of playing song."/>
+        <oaf_attribute name="panel:category" type="string" value="Accessories"/>
+        <oaf_attribute name="panel:icon" type="string" value="lyrics.png"/>
+</oaf_server>
+
+</oaf_info>

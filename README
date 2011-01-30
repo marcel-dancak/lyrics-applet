@@ -1,0 +1,21 @@
+
+Installation:
+=============
+
+extract it where you want (<installation-folder>)
+sudo ln -s <installation-folder>/lyrics-applet/bonobo/servers/LyricsApplet.server /usr/lib/bonobo/servers/LyricsApplet.server
+sudo ln -s <installation-folder>/lyrics-applet/lyrics_applet.py /usr/lib/gnome-applets/lyrics-applet
+sudo cp <installation-folder>/lyrics-applet/lyrics.png /usr/share/pixmaps/
+
+(lyrics_applet.py should be already executable, if not: chmod +x <installation-folder>/lyrics-applet/lyrics_applet.py)
+
+Debugging:
+==========
+
+cd /usr/lib/gnome-applets
+python lyrics-applet -w
+
+or
+
+cd <installation-folder>/lyrics-applet/
+python lyrics_applet.py -w
