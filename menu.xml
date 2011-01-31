@@ -5,11 +5,4 @@
           pixtype="stock" 
           pixname="gtk-preferences"/>
 <separator/>
-<submenu name="Submenu" _label="Su_bmenu">
-<menuitem name="ItemAbout" 
-          verb="About" 
-          label="_About" 
-          pixtype="stock" 
-          pixname="gtk-about"/>
-</submenu>
 </popup>

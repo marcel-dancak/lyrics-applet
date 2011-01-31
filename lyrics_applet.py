@@ -6,10 +6,12 @@ import logging
 import traceback
 import pygtk
 import gtk
+import pango
 import gnomeapplet
 import gconf
 import logging
 import logging.config
+
 
 from players.player import Player
 from lyricsengine.engine import LyricsEngine
@@ -66,6 +68,8 @@ def lyricsFile(songInfo):
 
 class Lyrics(object):
 
+	color = gtk.gdk.Color()
+	font = "Sans 10"
 	applet = None
 	label = None
 	lyrics_directory = "/home/dencer/Lyrics"
@@ -81,6 +85,29 @@ class Lyrics(object):
 		self.player.registerOnElapsedChanged(self.onSeek)
 		self.lyricsEngine = LyricsEngine(self.onLyricsFound, self.onEngineFinish)
 		self.lyricsEngine.setLyricsSources(['alsong', 'minilyrics', 'lrcdb', 'lyricsscreenlet'])
+		
+		self.label = gtk.Label("Lyrics Applet")
+		self.gconf_client = gconf.client_get_default()
+		self.gconf_client.add_dir("/apps/lyrics_applet", gconf.CLIENT_PRELOAD_NONE)
+		self.gconf_client.notify_add('/apps/lyrics_applet/color', self.color_changed)
+		self.gconf_client.notify_add('/apps/lyrics_applet/font', self.font_changed)
+		
+		self.color_changed(None)
+		self.font_changed(None)
+
+
+	def color_changed(self, client, *args):
+		color = self.gconf_client.get_string("/apps/lyrics_applet/color")
+		if color:
+			self.color = gtk.gdk.Color(color)
+			self.label.modify_fg(gtk.STATE_NORMAL, self.color)
+
+	def font_changed(self, client, *args):
+		font = self.gconf_client.get_string("/apps/lyrics_applet/font")
+		if font:
+			self.font = font
+			font_desc = pango.FontDescription(font)
+			self.label.modify_font(font_desc)
 
 	def onPlayerConnected(self):
 		print "onPlayerConnected"
@@ -175,12 +202,10 @@ class Lyrics(object):
 		pass
 
 	def show_preferences(self, *args):
-		print args
-		dialog = OptionsDialog(self.applet)
-		#fdia = gtk.FontSelectionDialog("Select font name")
+		dialog = OptionsDialog(self)
 		response = dialog.run()
 		if response == gtk.RESPONSE_OK:
-			pass
+			dialog.save_preferences()
 		dialog.destroy()
 
 
@@ -200,15 +225,14 @@ def sample_factory(applet, iid):
 	except:
 		pass
 	
-	label = gtk.Label("Lyrics Applet")
+	
 	applet.set_background_widget(applet)
 	#applet.modify_bg(gtk.STATE_NORMAL, gtk.gdk.Color(200, 0, 0, 0))
-	applet.add(label)
+	applet.add(lyrics.label)
 	
 	#applet.add_preferences("font")
 	#applet.add_preferences("color")
 	lyrics.applet = applet
-	lyrics.label = label
 	
 	applet.show_all()
 	return gtk.TRUE
