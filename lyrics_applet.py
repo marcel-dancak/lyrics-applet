@@ -5,20 +5,27 @@ import sys
 import logging
 import traceback
 import pygtk
-pygtk.require('2.0')
-
 import gtk
 import gnomeapplet
+import gconf
+import logging
+import logging.config
 
 from players.player import Player
 from lyricsengine.engine import LyricsEngine
 from lyricstimer import LyricsTimer
 from lyricsparser import LyricEntity
+from options import OptionsDialog
 import lyricsparser
 
-logging.basicConfig()
-log = logging.getLogger("LyricsScreenlet")
-log.setLevel(logging.DEBUG)
+pygtk.require('2.0')
+
+INSTALL_PATH = os.path.dirname(os.path.abspath(lyricsparser.__file__))
+
+logging.config.fileConfig(os.path.join(INSTALL_PATH, "logging.conf"))
+#logging.config.fileConfig("/home/dencer/gnome-applets/lyrics-applet/logging.conf")
+logger = logging.getLogger("LyricsApplet")
+logger.setLevel(logging.DEBUG)
 
 
 def getSongMetadata(player):
@@ -58,9 +65,11 @@ def lyricsFile(songInfo):
 
 
 class Lyrics(object):
+
+	applet = None
 	label = None
 	lyrics_directory = "/home/dencer/Lyrics"
-	
+
 	def __init__(self):
 		self.lyrics = None
 		self.lyricsTimer = None
@@ -93,26 +102,29 @@ class Lyrics(object):
 			self.label.set_text(self.lyrics[self.lyricsTimer.actualLine].text[0].strip())
 
 	def onSongChanged(self, songFile):
-		self.lyrics = None
-		if self.lyricsTimer:
-			self.lyricsTimer.pause()
-			self.lyricsTimer = None
+		try:
+			self.lyrics = None
+			if self.lyricsTimer:
+				self.lyricsTimer.pause()
+				self.lyricsTimer = None
 		
-		print "onSongChanged"
-		metadata = getSongMetadata(self.player)
-		metadata['file'] = songFile
+			print "onSongChanged"
+			metadata = getSongMetadata(self.player)
+			metadata['file'] = songFile
 		
-		self.label.set_text("")
-		print metadata
+			self.label.set_text("")
+			print metadata
 		
-		lyrics = self.getLyricsFromDisk(metadata)
-		if lyrics is None:
-			self.lyricsEngine.search(metadata)
-			print "searching started"
-		else:
-			self.onLyricsFound(lyrics)
-		
-	
+			lyrics = self.getLyricsFromDisk(metadata)
+			if lyrics is None:
+				self.lyricsEngine.search(metadata)
+				print "searching started"
+			else:
+				self.onLyricsFound(lyrics)
+		except:
+			traceback.print_exc()
+
+
 	def onLyricsFound(self, lyrics):
 		if not self.lyrics and lyrics:
 			print "onLyricsFound"
@@ -138,7 +150,7 @@ class Lyrics(object):
 		print "onEngineFinish"
 
 	def getLyricsFromDisk(self, songInfo):
-		log.debug("searching lyrics on disk")
+		logger.debug("searching lyrics on disk")
 		# check for .lrc file in song file directory
 		lrc_file = None
 		if songInfo.has_key('file'):
@@ -146,7 +158,7 @@ class Lyrics(object):
 		if lrc_file == None or not os.path.exists(lrc_file):
 			lrc_path = lyricsFile(songInfo)
 			lrc_file = os.path.join(self.lyrics_directory, lrc_path['folder'], lrc_path['file'])
-			log.debug("lyrics should be here: %s" % lrc_file)
+			logger.debug("lyrics should be here: %s" % lrc_file)
 			
 		print lrc_file
 		if lrc_file != None and os.path.exists(lrc_file):
@@ -158,14 +170,44 @@ class Lyrics(object):
 		print "Nothing on disk"
 		return None
 
+	def show_about(self, *args):
+		print args
+		pass
+
+	def show_preferences(self, *args):
+		print args
+		dialog = OptionsDialog(self.applet)
+		#fdia = gtk.FontSelectionDialog("Select font name")
+		response = dialog.run()
+		if response == gtk.RESPONSE_OK:
+			pass
+		dialog.destroy()
+
 
 def sample_factory(applet, iid):
+	lyrics = Lyrics()
+	logger.info("creating applet")
+	logger.info("__file__: %s" % os.path.abspath(__file__))
+	logger.info("lyricsparser.__file__: %s" % lyricsparser.__file__)
+	try:
+		menu_file = open(os.path.join(INSTALL_PATH, "menu.xml"))
+		menu = menu_file.read()
+		menu_file.close()
+	
+		verbs = [('About', lyrics.show_about), ('Preferences', lyrics.show_preferences)]
+		applet.setup_menu(menu, verbs, None)
+		#applet.setup_menu_from_file(None, os.path.join(base_dir, "menu.xml"), None, verbs)
+	except:
+		pass
+	
 	label = gtk.Label("Lyrics Applet")
 	applet.set_background_widget(applet)
 	#applet.modify_bg(gtk.STATE_NORMAL, gtk.gdk.Color(200, 0, 0, 0))
 	applet.add(label)
 	
-	lyrics = Lyrics()
+	#applet.add_preferences("font")
+	#applet.add_preferences("color")
+	lyrics.applet = applet
 	lyrics.label = label
 	
 	applet.show_all()
